@@ -2445,14 +2445,416 @@ input:checked + .slider:before {
   box-shadow: var(--card-shadow);
 }
 
-.tables-qr-card {
-  padding: 32px;
+/* ==========================================
+   4. NEW TABLES MANAGEMENT PAGE STYLING
+   ========================================== */
+.tables-dashboard-grid {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.tables-list-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tables-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.table-metric-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+
+.table-metric-card .metric-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.table-metric-card .metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dining-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* Dining Table Card styling */
+.dining-table-card {
+  background-color: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dining-table-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 20px -8px rgba(255, 122, 0, 0.15), var(--card-shadow);
+}
+
+.dining-table-card.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light), 0 8px 24px -6px rgba(255, 122, 0, 0.2);
+  background-color: var(--primary-light) !important;
+}
+
+body.dark-theme .dining-table-card.active {
+  background-color: rgba(255, 122, 0, 0.1) !important;
+}
+
+.dining-table-card .card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dining-table-card .table-name-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.dining-table-card .seats-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.dining-table-card .table-card-status {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dining-table-card.free .table-card-status {
+  color: var(--success);
+}
+
+.dining-table-card.occupied .table-card-status {
+  color: var(--primary);
+}
+
+.dining-table-card .table-card-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dining-table-card .table-card-bill-tag {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.dining-table-card .mini-qr-preview-box {
+  width: 70px;
+  height: 70px;
+  border: 1px solid var(--border);
+  background-color: white;
+  padding: 4px;
+  border-radius: 6px;
+  margin: 0 auto 16px auto;
+  opacity: 0.85;
+  transition: var(--transition);
+}
+
+.dining-table-card:hover .mini-qr-preview-box {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.dining-table-card .table-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.table-action-btn {
+  padding: 6px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  font-weight: 600;
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.table-action-btn:hover {
+  background-color: var(--black);
+  color: white;
+}
+
+.table-action-btn.view-btn {
+  flex: 1;
+}
+
+.table-action-btn.clear-btn {
+  background-color: var(--success-light);
+  color: var(--success);
+  border-color: rgba(46, 189, 89, 0.15);
+}
+
+.table-action-btn.clear-btn:hover {
+  background-color: var(--success);
+  color: white;
+}
+
+.table-action-btn.delete-btn {
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border-color: rgba(229, 57, 53, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-action-btn.delete-btn:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* QR Customizer & Details Sidebar Column */
+.qr-customizer-column {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.customizer-header {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--black);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+/* Premium Sticker Preview Card */
+.sticker-preview-card {
+  background: white;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  position: relative;
+  color: #000000;
+}
+
+.sticker-restaurant-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #000000;
+  margin-bottom: 2px;
+}
+
+.sticker-subtitle {
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.sticker-qr-wrapper {
+  width: 160px;
+  height: 160px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fancy-qr-code {
+  width: 100%;
+  height: 100%;
+}
+
+.sticker-table-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.sticker-url-text {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  word-break: break-all;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.sticker-footer-instructions {
+  font-size: 9px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+/* Customizer form styling */
+.customizer-controls-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.control-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.qr-color-dots {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.qr-color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #cbd5e1;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+
+.qr-color-dot:hover {
+  transform: scale(1.15);
+}
+
+.qr-color-dot.active {
+  box-shadow: 0 0 0 2px var(--primary);
+  transform: scale(1.1);
+}
+
+/* Modal Window styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-main);
+}
+
+.modal-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header-flex h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.modal-close {
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-muted);
+  transition: var(--transition);
+  padding: 4px;
+}
+
+.modal-close:hover {
+  color: var(--black);
+}
+
+/* Dark mode adjustments */
+body.dark-theme .table-metric-card,
+body.dark-theme .dining-table-card,
+body.dark-theme .qr-customizer-column,
+body.dark-theme .modal-card {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-theme .dining-table-card:hover {
+  border-color: var(--primary) !important;
 }
 
 .switch-container {

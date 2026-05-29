@@ -214,11 +214,11 @@ let state = {
   ],
 
   tables: [
-    { id: "T-01", status: "Occupied" },
-    { id: "T-02", status: "Occupied" },
-    { id: "T-03", status: "Occupied" },
-    { id: "T-04", status: "Free" },
-    { id: "T-05", status: "Occupied" }
+    { id: "T-01", status: "Occupied", seats: 4 },
+    { id: "T-02", status: "Occupied", seats: 2 },
+    { id: "T-03", status: "Occupied", seats: 4 },
+    { id: "T-04", status: "Free", seats: 6 },
+    { id: "T-05", status: "Occupied", seats: 2 }
   ],
   
   billingData: [
@@ -233,6 +233,11 @@ let state = {
   activeIncomingFilter: "New",
   activeMenuCategory: "All Items",
   editingMenuItemId: null,
+  selectedTableId: "T-01",
+  qrCustomizer: {
+    color: "#ff7a00",
+    showLogo: true
+  },
 
   cart: [],
   activeCustomerOrder: null,
@@ -268,6 +273,7 @@ function initApp() {
   renderIncomingOrders();
   renderMenuManagement();
   renderBillingPanel();
+  renderTablesPage();
   
   // Highlight default sidebar submenu filter
   switchSubmenuFilter(state.activeIncomingFilter);
@@ -311,13 +317,15 @@ function switchTab(tabId) {
     orders: "Incoming Orders",
     menu: "Menu Management",
     billing: "Billing Panel",
-    saas: "Tables & QR Codes",
+    saas: "Tables & QR Management",
     settings: "Settings"
   };
   activePanelTitle.textContent = titles[tabId] || "Dashboard";
 
   if (tabId === "settings") {
     renderSettingsPanel();
+  } else if (tabId === "saas") {
+    renderTablesPage();
   }
 }
 
@@ -515,11 +523,19 @@ function setupEventListeners() {
         }
       });
 
-      alert(`Payment complete for ${tableId}. Table status set to Paid.`);
+      // Free the table status
+      const cleanTableId = rawNum.length === 1 ? `T-0${rawNum}` : `T-${rawNum}`;
+      const tableIdx = state.tables.findIndex(t => t.id === cleanTableId);
+      if (tableIdx !== -1) {
+        state.tables[tableIdx].status = "Free";
+      }
+
+      alert(`Payment complete for ${tableId}. Table status set to Available.`);
       
       renderBillingPanel();
       renderDashboardOverview();
       renderIncomingOrders();
+      renderTablesPage();
     }
   });
 
@@ -615,6 +631,13 @@ function setupEventListeners() {
     state.orders.push(newOrder);
     state.activeCustomerOrder = newOrder;
 
+    // Set table as occupied in state.tables
+    const tableToSet = state.activeCustomerTable.length === 1 ? `T-0${state.activeCustomerTable}` : `T-${state.activeCustomerTable}`;
+    const tableIdx = state.tables.findIndex(t => t.id === tableToSet);
+    if (tableIdx !== -1) {
+      state.tables[tableIdx].status = "Occupied";
+    }
+
     // Check if table entry exists in billing
     const cleanTableLabel = `Table ${state.activeCustomerTable}`;
     const bIndex = state.billingData.findIndex(b => b.table === cleanTableLabel);
@@ -646,6 +669,7 @@ function setupEventListeners() {
     renderDashboardOverview();
     renderIncomingOrders();
     renderBillingPanel();
+    renderTablesPage();
   });
 
   document.getElementById("cust-order-more-btn").addEventListener("click", () => {
@@ -814,6 +838,87 @@ function setupEventListeners() {
       const nextSibling = labelDisp ? labelDisp.nextElementSibling : null;
       if (nextSibling) {
         nextSibling.textContent = `http://localhost:3000/menu?table=T-${displayIndex}`;
+      }
+    });
+  }
+
+  // --- NEW TABLES DASHBOARD EVENT LISTENERS ---
+  const addTableBtn = document.getElementById("add-table-btn");
+  const addTableModal = document.getElementById("add-table-modal");
+  const closeAddTableModal = document.getElementById("close-add-table-modal");
+  
+  if (addTableBtn && addTableModal) {
+    addTableBtn.addEventListener("click", () => {
+      addTableModal.style.display = "flex";
+      // Auto suggest ID
+      const nextNum = state.tables.length + 1;
+      const displayNum = nextNum < 10 ? `0${nextNum}` : nextNum;
+      document.getElementById("new-table-id").value = `T-${displayNum}`;
+      document.getElementById("new-table-seats").value = "4";
+    });
+  }
+  
+  if (closeAddTableModal && addTableModal) {
+    closeAddTableModal.addEventListener("click", () => {
+      addTableModal.style.display = "none";
+    });
+  }
+
+  // Add Table Form Submit
+  const addTableForm = document.getElementById("add-table-form");
+  if (addTableForm) {
+    addTableForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const idVal = document.getElementById("new-table-id").value.trim();
+      const seatsVal = parseInt(document.getElementById("new-table-seats").value, 10);
+      
+      if (addDiningTable(idVal, seatsVal)) {
+        addTableModal.style.display = "none";
+        addTableForm.reset();
+      }
+    });
+  }
+
+  // Seating Capacity edit change listener
+  const seatsEditInput = document.getElementById("table-seats-edit-input");
+  if (seatsEditInput) {
+    seatsEditInput.addEventListener("input", (e) => {
+      const activeId = state.selectedTableId;
+      const tableIndex = state.tables.findIndex(t => t.id === activeId);
+      if (tableIndex !== -1) {
+        state.tables[tableIndex].seats = parseInt(e.target.value, 10) || 4;
+        renderTablesPage();
+      }
+    });
+  }
+
+  // Simulator Launch button click
+  const simulateBtn = document.getElementById("simulate-table-btn");
+  if (simulateBtn) {
+    simulateBtn.addEventListener("click", () => {
+      simulateCustomerTable(state.selectedTableId);
+    });
+  }
+
+  // QR code toggle logo
+  const qrLogoCheckbox = document.getElementById("qr-toggle-logo");
+  if (qrLogoCheckbox) {
+    qrLogoCheckbox.addEventListener("change", (e) => {
+      state.qrCustomizer.showLogo = e.target.checked;
+      renderQRStickerDetails();
+    });
+  }
+
+  // QR code color dots
+  const qrColorContainer = document.querySelector(".qr-color-dots");
+  if (qrColorContainer) {
+    qrColorContainer.addEventListener("click", (e) => {
+      const dot = e.target.closest(".qr-color-dot");
+      if (dot) {
+        document.querySelectorAll(".qr-color-dot").forEach(d => d.classList.remove("active"));
+        dot.classList.add("active");
+        state.qrCustomizer.color = dot.getAttribute("data-color");
+        renderQRStickerDetails();
       }
     });
   }
@@ -1137,6 +1242,7 @@ window.changeStatus = function(orderId, newStatus) {
     renderIncomingOrders();
     renderDashboardOverview();
     renderBillingPanel();
+    renderTablesPage();
   }
 };
 
@@ -1701,3 +1807,333 @@ window.updateSimulatorTableLabels = function() {
   const custConfirmTableTag = document.getElementById("cust-confirm-table-tag");
   if (custConfirmTableTag) custConfirmTableTag.textContent = `Table ${tableVal}`;
 };
+
+// ==========================================
+// TABLES MANAGEMENT PAGE RENDERING & LOGIC
+// ==========================================
+
+function generateFancyQR(tableId, color = "#ff7a00", showLogo = true) {
+  const logoDisplay = showLogo 
+    ? `<rect x="38" y="38" width="24" height="24" fill="white" rx="4" />
+       <!-- Stylistic Fork and Spoon Fork representation in SVG -->
+       <path d="M46 43 L46 51 M48 43 L48 51 M50 43 L50 51 M44 51 H52" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+       <circle cx="50" cy="51" r="2" fill="${color}"/>
+       <path d="M53 43 C53 47, 55 47, 55 53 L55 57" stroke="${color}" stroke-width="1.5" fill="none"/>`
+    : '';
+
+  return `
+    <svg width="100%" height="100%" viewBox="0 0 100 100" style="display:block;">
+      <!-- Corner Finder Top-Left -->
+      <rect x="0" y="0" width="30" height="30" fill="${color}" rx="3" />
+      <rect x="5" y="5" width="20" height="20" fill="white" rx="1.5" />
+      <rect x="10" y="10" width="10" height="10" fill="${color}" rx="1" />
+      
+      <!-- Corner Finder Top-Right -->
+      <rect x="70" y="0" width="30" height="30" fill="${color}" rx="3" />
+      <rect x="75" y="5" width="20" height="20" fill="white" rx="1.5" />
+      <rect x="80" y="10" width="10" height="10" fill="${color}" rx="1" />
+      
+      <!-- Corner Finder Bottom-Left -->
+      <rect x="0" y="70" width="30" height="30" fill="${color}" rx="3" />
+      <rect x="5" y="75" width="20" height="20" fill="white" rx="1.5" />
+      <rect x="10" y="80" width="10" height="10" fill="${color}" rx="1" />
+      
+      <!-- Alignment Pattern -->
+      <rect x="74" y="74" width="12" height="12" fill="${color}" rx="2" />
+      <rect x="77" y="77" width="6" height="6" fill="white" rx="1" />
+      <rect x="79" y="79" width="2" height="2" fill="${color}" rx="0.5" />
+      
+      <!-- Styled Matrix Dot Patterns -->
+      <rect x="36" y="4" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="46" y="0" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="56" y="6" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="36" y="14" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="46" y="18" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="56" y="12" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="36" y="24" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="46" y="28" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="56" y="22" width="6" height="6" fill="${color}" rx="1.5" />
+
+      <rect x="4" y="36" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="14" y="36" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="24" y="36" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="0" y="46" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="18" y="48" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="28" y="46" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="6" y="56" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="14" y="58" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="24" y="56" width="6" height="6" fill="${color}" rx="1.5" />
+
+      <rect x="36" y="72" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="46" y="78" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="56" y="74" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="38" y="86" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="48" y="88" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="58" y="84" width="6" height="6" fill="${color}" rx="1.5" />
+      
+      <rect x="74" y="36" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="88" y="36" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="72" y="46" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="82" y="44" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="92" y="48" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="76" y="56" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="86" y="58" width="6" height="6" fill="${color}" rx="1.5" />
+
+      <rect x="90" y="74" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="88" y="86" width="6" height="6" fill="${color}" rx="1.5" />
+      <rect x="78" y="90" width="6" height="6" fill="${color}" rx="1.5" />
+      
+      ${logoDisplay}
+    </svg>
+  `;
+}
+
+function renderTablesPage() {
+  const gridContainer = document.getElementById("dining-tables-grid-container");
+  if (!gridContainer) return;
+  
+  // Calculate Metrics
+  const totalTables = state.tables.length;
+  const occupiedCount = state.tables.filter(t => t.status === "Occupied").length;
+  const totalSeats = state.tables.reduce((sum, t) => sum + (t.seats || 4), 0);
+  const freeCount = totalTables - occupiedCount;
+
+  // Set Metric values
+  document.getElementById("metric-total-tables").textContent = totalTables;
+  document.getElementById("metric-occupied-tables").textContent = occupiedCount;
+  document.getElementById("metric-seating-capacity").textContent = totalSeats;
+  document.getElementById("metric-free-tables").textContent = freeCount;
+
+  // Render Grid Cards
+  gridContainer.innerHTML = "";
+  
+  state.tables.forEach(table => {
+    const card = document.createElement("div");
+    const isSelected = table.id === state.selectedTableId;
+    card.className = `dining-table-card ${isSelected ? 'active' : ''} ${table.status.toLowerCase()}`;
+    card.setAttribute("data-id", table.id);
+
+    let orderSummaryText = "No active orders";
+    let billAmount = "";
+    
+    const tableNumRaw = table.id.replace("T-", "");
+    const tableOrder = state.orders.find(o => parseInt(o.table) === parseInt(tableNumRaw) && o.status !== "done");
+    if (tableOrder) {
+      orderSummaryText = `${tableOrder.items.length} items · ${tableOrder.timeAgo}`;
+      billAmount = `₹${tableOrder.total}`;
+    } else {
+      const billData = state.billingData.find(b => b.table === `Table ${tableNumRaw}`);
+      if (billData && billData.status !== "Paid") {
+        orderSummaryText = `${billData.orders} orders pending payment`;
+        billAmount = `₹${billData.total}`;
+      }
+    }
+
+    let statusText = "🟢 Available";
+    if (table.status === "Occupied") {
+      statusText = "🟠 Seated / Ordering";
+      const billData = state.billingData.find(b => b.table === `Table ${tableNumRaw}`);
+      if (billData && billData.status === "Unpaid" && !tableOrder) {
+        statusText = "🔴 Bill Pending";
+      }
+    }
+
+    card.innerHTML = `
+      <div class="card-header-row">
+        <span class="table-name-label">Table ${table.id}</span>
+        <span class="seats-label">👥 ${table.seats || 4} Seats</span>
+      </div>
+      <div class="table-card-status">${statusText}</div>
+      <div class="table-card-summary">${orderSummaryText}</div>
+      ${billAmount ? `<div class="table-card-bill-tag">${billAmount}</div>` : ''}
+      
+      <!-- Mini QR Preview -->
+      <div class="mini-qr-preview-box">
+        ${generateFancyQR(table.id, state.qrCustomizer.color, false)}
+      </div>
+
+      <div class="table-card-actions">
+        <button class="table-action-btn view-btn" onclick="event.stopPropagation(); selectActiveTableQR('${table.id}')">🔍 View QR</button>
+        ${table.status === "Occupied" ? `<button class="table-action-btn clear-btn" onclick="event.stopPropagation(); clearTableStatus('${table.id}')">🧼 Clear</button>` : ''}
+        <button class="table-action-btn delete-btn" onclick="event.stopPropagation(); deleteDiningTable('${table.id}')">🗑️</button>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      selectActiveTableQR(table.id);
+    });
+
+    gridContainer.appendChild(card);
+  });
+
+  renderQRStickerDetails();
+}
+
+function selectActiveTableQR(tableId) {
+  state.selectedTableId = tableId;
+  
+  document.querySelectorAll(".dining-table-card").forEach(card => {
+    if (card.getAttribute("data-id") === tableId) {
+      card.classList.add("active");
+    } else {
+      card.classList.remove("active");
+    }
+  });
+
+  const title = document.getElementById("customizer-panel-title");
+  if (title) title.textContent = `Table ${tableId} Details`;
+
+  renderQRStickerDetails();
+}
+
+function renderQRStickerDetails() {
+  const tableId = state.selectedTableId;
+  const table = state.tables.find(t => t.id === tableId);
+  if (!table) return;
+
+  const tableNumRaw = table.id.replace("T-", "");
+  
+  document.getElementById("sticker-store-name").textContent = state.restaurantSettings.name;
+  document.getElementById("sticker-table-label-display").textContent = `Table ${table.id}`;
+  
+  const urlDisplay = document.getElementById("sticker-url-display");
+  if (urlDisplay) {
+    urlDisplay.textContent = `http://localhost:3000/menu?table=T-${tableNumRaw}`;
+  }
+
+  const qrDisplay = document.getElementById("fancy-qr-display");
+  if (qrDisplay) {
+    qrDisplay.innerHTML = generateFancyQR(tableId, state.qrCustomizer.color, state.qrCustomizer.showLogo);
+  }
+
+  const seatsInput = document.getElementById("table-seats-edit-input");
+  if (seatsInput) {
+    seatsInput.value = table.seats || 4;
+  }
+  
+  const logoCheckbox = document.getElementById("qr-toggle-logo");
+  if (logoCheckbox) {
+    logoCheckbox.checked = state.qrCustomizer.showLogo;
+  }
+
+  document.querySelectorAll(".qr-color-dot").forEach(dot => {
+    if (dot.getAttribute("data-color") === state.qrCustomizer.color) {
+      dot.classList.add("active");
+    } else {
+      dot.classList.remove("active");
+    }
+  });
+}
+
+function addDiningTable(tableId, seats) {
+  let cleanId = tableId.trim().toUpperCase();
+  if (!cleanId.startsWith("T-")) {
+    cleanId = "T-" + cleanId;
+  }
+
+  if (state.tables.some(t => t.id === cleanId)) {
+    alert(`Table ${cleanId} already exists!`);
+    return false;
+  }
+
+  state.tables.push({
+    id: cleanId,
+    status: "Free",
+    seats: parseInt(seats, 10) || 4
+  });
+
+  state.tables.sort((a, b) => a.id.localeCompare(b.id));
+  state.restaurantSettings.tablesCount = state.tables.length;
+  state.selectedTableId = cleanId;
+
+  populateSaaSTableDropdowns();
+  populateDiningTablesSelectDropdown();
+
+  renderTablesPage();
+  renderDashboardOverview();
+  renderBillingPanel();
+  renderSettingsPanel();
+  
+  alert(`Table ${cleanId} created successfully.`);
+  return true;
+}
+
+function deleteDiningTable(tableId) {
+  const table = state.tables.find(t => t.id === tableId);
+  if (!table) return;
+
+  if (table.status === "Occupied") {
+    if (!confirm(`Warning: Table ${tableId} is currently Occupied. Are you sure you want to delete it?`)) {
+      return;
+    }
+  } else {
+    if (!confirm(`Are you sure you want to delete Table ${tableId}?`)) {
+      return;
+    }
+  }
+
+  state.tables = state.tables.filter(t => t.id !== tableId);
+  state.restaurantSettings.tablesCount = state.tables.length;
+
+  if (state.selectedTableId === tableId && state.tables.length > 0) {
+    state.selectedTableId = state.tables[0].id;
+  }
+
+  populateSaaSTableDropdowns();
+  populateDiningTablesSelectDropdown();
+
+  renderTablesPage();
+  renderDashboardOverview();
+  renderBillingPanel();
+  renderSettingsPanel();
+  
+  alert(`Table ${tableId} deleted successfully.`);
+}
+
+function clearTableStatus(tableId) {
+  const tableIndex = state.tables.findIndex(t => t.id === tableId);
+  if (tableIndex !== -1) {
+    state.tables[tableIndex].status = "Free";
+    
+    const tableNumRaw = tableId.replace("T-", "");
+    
+    state.orders.forEach((ord, idx) => {
+      if (parseInt(ord.table) === parseInt(tableNumRaw)) {
+        state.orders[idx].billingStatus = "paid";
+        state.orders[idx].status = "done";
+      }
+    });
+
+    const bIndex = state.billingData.findIndex(b => b.table === `Table ${tableNumRaw}`);
+    if (bIndex !== -1) {
+      state.billingData[bIndex].status = "Paid";
+    }
+
+    renderTablesPage();
+    renderDashboardOverview();
+    renderIncomingOrders();
+    renderBillingPanel();
+    alert(`Table ${tableId} cleared and marked available.`);
+  }
+}
+
+function simulateCustomerTable(tableId) {
+  const tableNumRaw = tableId.replace("T-", "");
+  state.activeCustomerTable = tableNumRaw;
+  
+  const simSelect = document.getElementById("cust-select-table-sim");
+  if (simSelect) {
+    simSelect.value = tableNumRaw;
+  }
+
+  updateSimulatorTableLabels();
+  switchCustomerScreen("landing");
+
+  const simulator = document.getElementById("simulator-panel");
+  if (simulator && simulator.classList.contains("collapsed")) {
+    simulator.classList.remove("collapsed");
+    renderCustomerMenu();
+  }
+  
+  alert(`Simulator loaded for Table T-${tableNumRaw}!`);
+}

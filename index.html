@@ -503,37 +503,141 @@
           <section id="panel-saas" class="panel-view">
             <div class="panel-header-flex" style="margin-bottom: 20px;">
               <div class="panel-title-desc">
-                <h2 class="panel-inner-title">Dining Tables & QR Code Generator</h2>
-                <p class="panel-inner-desc">Verify QR codes assigned to restaurant tables</p>
+                <h2 class="panel-inner-title">Dining Tables & QR Management</h2>
+                <p class="panel-inner-desc">Monitor real-time table status, view active orders, and customize QR stickers for contactless ordering.</p>
               </div>
+              <button class="btn btn-black" id="add-table-btn">
+                <span>➕ Add Dining Table</span>
+              </button>
             </div>
 
-            <div class="tables-qr-card">
-              <h3 style="margin-bottom:10px;">Select Table to View QR</h3>
-              <select id="saas-table-select-page" style="padding:10px 14px; width:200px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; background-color: var(--bg-primary); color: var(--text-main);">
-                <option value="1">Table T-01</option>
-                <option value="2">Table T-02</option>
-                <option value="3">Table T-03</option>
-                <option value="4">Table T-04</option>
-                <option value="5">Table T-05</option>
-              </select>
-
-              <div style="width:180px; height:180px; border: 4px solid var(--text-main); background:white; padding:8px; display:flex; flex-wrap:wrap; margin-bottom:16px;">
-                <div style="width: 50px; height: 50px; background: var(--black); margin-right: auto; margin-bottom: auto;"></div>
-                <div style="width: 50px; height: 50px; background: var(--black); margin-left: auto; margin-bottom: auto;"></div>
-                <div style="width: 100%; height: 12px; display:flex; gap: 4px; margin: 6px 0;">
-                  <div style="flex:1; background: var(--black)"></div>
-                  <div style="flex:1; background: var(--primary)"></div>
-                  <div style="flex:1; background: var(--black)"></div>
-                </div>
-                <div style="width: 50px; height: 50px; background: var(--black); margin-right: auto; margin-top: auto;"></div>
-                <div style="width: 50px; height: 50px; background: var(--primary); margin-left: auto; margin-top: auto;"></div>
-              </div>
-              <h4 id="saas-table-label-display" style="color:var(--primary); font-weight:700;">Table T-01</h4>
-              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">http://localhost:3000/menu?table=T-01</p>
+            <!-- New interactive columns layout -->
+            <div class="tables-dashboard-grid">
               
-              <button class="btn btn-black" style="margin-top:20px;" onclick="alert('Sent QR to print queue!')">Print QR Sticker</button>
+              <!-- Left Column: Tables Grid & Seating Overview -->
+              <div class="tables-list-column">
+                
+                <!-- Table Metrics Row -->
+                <div class="tables-metrics-row">
+                  <div class="table-metric-card">
+                    <div class="metric-value" id="metric-total-tables">5</div>
+                    <div class="metric-label">Total Tables</div>
+                  </div>
+                  <div class="table-metric-card">
+                    <div class="metric-value" id="metric-occupied-tables">4</div>
+                    <div class="metric-label">Occupied</div>
+                  </div>
+                  <div class="table-metric-card">
+                    <div class="metric-value" id="metric-seating-capacity">18</div>
+                    <div class="metric-label">Total Seats</div>
+                  </div>
+                  <div class="table-metric-card">
+                    <div class="metric-value" id="metric-free-tables">1</div>
+                    <div class="metric-label">Available</div>
+                  </div>
+                </div>
+
+                <!-- Grid of tables -->
+                <div class="dining-tables-grid" id="dining-tables-grid-container">
+                  <!-- Dynamic table cards -->
+                </div>
+              </div>
+
+              <!-- Right Column: QR Sticker Customizer & Details -->
+              <div class="qr-customizer-column">
+                <div class="customizer-header" id="customizer-panel-title">Table T-01 Details</div>
+                
+                <!-- Sticker Preview Card -->
+                <div class="sticker-preview-card" id="qr-sticker-preview">
+                  <div class="sticker-restaurant-name" id="sticker-store-name">Serviq</div>
+                  <div class="sticker-subtitle">SCAN TO ORDER</div>
+                  
+                  <!-- QR Code Box -->
+                  <div class="sticker-qr-wrapper">
+                    <div class="fancy-qr-code" id="fancy-qr-display">
+                      <!-- Center logo inside, styled SVG or custom canvas -->
+                    </div>
+                  </div>
+                  
+                  <div class="sticker-table-label" id="sticker-table-label-display">Table T-01</div>
+                  <div class="sticker-url-text" id="sticker-url-display">http://localhost:3000/menu?table=T-01</div>
+                  <div class="sticker-footer-instructions">Powered by Serviq</div>
+                </div>
+
+                <!-- Customization Options Form -->
+                <div class="customizer-controls-card">
+                  <div class="control-section-title">QR Code Customizer</div>
+                  
+                  <div class="form-group">
+                    <label>Accent Color</label>
+                    <div class="qr-color-dots">
+                      <button class="qr-color-dot active" data-color="#ff7a00" style="background: #ff7a00;"></button>
+                      <button class="qr-color-dot" data-color="#000000" style="background: #000000;"></button>
+                      <button class="qr-color-dot" data-color="#1e40af" style="background: #1e40af;"></button>
+                      <button class="qr-color-dot" data-color="#15803d" style="background: #15803d;"></button>
+                      <button class="qr-color-dot" data-color="#7c3aed" style="background: #7c3aed;"></button>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <div>
+                      <div style="font-weight: 600; font-size: 13px;">Center Logo</div>
+                      <div style="font-size: 11px; color: var(--text-muted);">Show brand logo icon inside QR</div>
+                    </div>
+                    <label class="switch-container">
+                      <input type="checkbox" id="qr-toggle-logo" checked>
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="table-seats-edit-input">Seating Capacity</label>
+                    <input type="number" id="table-seats-edit-input" min="1" max="12" style="padding: 8px 12px; font-size: 13px;">
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-black" id="simulate-table-btn" style="width: 100%;">
+                      📱 Open in Customer Simulator
+                    </button>
+                    <div style="display: flex; gap: 10px;">
+                      <button class="btn btn-outline" id="print-sticker-btn" style="flex: 1; font-size: 13px;" onclick="alert('Print request sent to sticker queue!')">
+                        🖨️ Print Sticker
+                      </button>
+                      <button class="btn btn-outline" id="download-sticker-btn" style="flex: 1; font-size: 13px;" onclick="alert('Sticker template saved to downloads!')">
+                        💾 Download SVG
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
+
+            <!-- Add Dining Table Modal -->
+            <div class="modal-overlay" id="add-table-modal" style="display: none;">
+              <div class="modal-card">
+                <div class="modal-header-flex">
+                  <h3>Add Dining Table</h3>
+                  <span class="modal-close" id="close-add-table-modal">✕</span>
+                </div>
+                <form id="add-table-form">
+                  <div class="form-group">
+                    <label for="new-table-id">Table Number / ID</label>
+                    <input type="text" id="new-table-id" placeholder="e.g. T-06" required>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Recommended format: T-XX (e.g. T-06, T-07)</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="new-table-seats">Seating Capacity</label>
+                    <input type="number" id="new-table-seats" min="1" max="20" value="4" required>
+                  </div>
+                  <button type="submit" class="btn btn-black" style="width: 100%; margin-top: 10px;">
+                    Create Table
+                  </button>
+                </form>
+              </div>
+            </div>
+
           </section>
 
           <!-- ==========================================
