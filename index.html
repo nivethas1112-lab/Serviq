@@ -128,7 +128,7 @@
           <li class="sidebar-item" data-tab="saas">
             <a href="#">📋 Tables</a>
           </li>
-          <li class="sidebar-item" onclick="alert('Settings view coming soon!')">
+          <li class="sidebar-item" data-tab="settings">
             <a href="#">⚙️ Settings</a>
           </li>
         </ul>
@@ -451,22 +451,8 @@
 
                     <div class="price-breakdown-card">
                       <div class="breakdown-header">PRICE BREAKDOWN</div>
-                      
-                      <div class="breakdown-row">
-                        <span>Subtotal</span>
-                        <span id="bill-calc-subtotal" style="font-weight:500;">₹880</span>
-                      </div>
-                      <div class="breakdown-row">
-                        <span>CGST (2.5%)</span>
-                        <span id="bill-calc-cgst" style="font-weight:500;">₹22</span>
-                      </div>
-                      <div class="breakdown-row">
-                        <span>SGST (2.5%)</span>
-                        <span id="bill-calc-sgst" style="font-weight:500;">₹22</span>
-                      </div>
-                      <div class="breakdown-row total-row">
-                        <span>Total</span>
-                        <span id="bill-calc-total">₹924</span>
+                      <div id="billing-breakdown-container">
+                        <!-- Dynamically populated in app.js -->
                       </div>
                     </div>
                   </div>
@@ -522,9 +508,9 @@
               </div>
             </div>
 
-            <div style="background:white; padding:32px; border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; text-align:center; max-width:600px; margin: 0 auto;">
+            <div class="tables-qr-card">
               <h3 style="margin-bottom:10px;">Select Table to View QR</h3>
-              <select id="saas-table-select-page" style="padding:10px 14px; width:200px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
+              <select id="saas-table-select-page" style="padding:10px 14px; width:200px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; background-color: var(--bg-primary); color: var(--text-main);">
                 <option value="1">Table T-01</option>
                 <option value="2">Table T-02</option>
                 <option value="3">Table T-03</option>
@@ -532,7 +518,7 @@
                 <option value="5">Table T-05</option>
               </select>
 
-              <div style="width:180px; height:180px; border: 4px solid var(--black); background:white; padding:8px; display:flex; flex-wrap:wrap; margin-bottom:16px;">
+              <div style="width:180px; height:180px; border: 4px solid var(--text-main); background:white; padding:8px; display:flex; flex-wrap:wrap; margin-bottom:16px;">
                 <div style="width: 50px; height: 50px; background: var(--black); margin-right: auto; margin-bottom: auto;"></div>
                 <div style="width: 50px; height: 50px; background: var(--black); margin-left: auto; margin-bottom: auto;"></div>
                 <div style="width: 100%; height: 12px; display:flex; gap: 4px; margin: 6px 0;">
@@ -547,6 +533,149 @@
               <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">http://localhost:3000/menu?table=T-01</p>
               
               <button class="btn btn-black" style="margin-top:20px;" onclick="alert('Sent QR to print queue!')">Print QR Sticker</button>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               PANEL: SETTINGS
+               ========================================== -->
+          <section id="panel-settings" class="panel-view">
+            <div class="panel-header-flex" style="margin-bottom: 20px;">
+              <div class="panel-title-desc">
+                <h2 class="panel-inner-title">Restaurant Settings</h2>
+                <p class="panel-inner-desc">Manage store branding, operations, tax policies, and dashboard appearance</p>
+              </div>
+            </div>
+
+            <div class="settings-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+              <!-- Left Column: Form Cards -->
+              <div class="settings-forms-column" style="display: flex; flex-direction: column; gap: 24px;">
+                
+                <!-- Card 1: Restaurant Identity -->
+                <div class="settings-card">
+                  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">
+                    <span>🏪</span> Restaurant Details
+                  </h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-name" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Restaurant Name</label>
+                      <input type="text" id="settings-name" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-tagline" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Tagline / Subtitle</label>
+                      <input type="text" id="settings-tagline" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);">
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-currency" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Currency Symbol</label>
+                      <select id="settings-currency" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);">
+                        <option value="₹">₹ (Indian Rupee)</option>
+                        <option value="$">$ (US Dollar)</option>
+                        <option value="€">€ (Euro)</option>
+                        <option value="£">£ (British Pound)</option>
+                        <option value="AED">AED (UAE Dirham)</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-email" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Support Email</label>
+                      <input type="email" id="settings-email" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Operations & Finance -->
+                <div class="settings-card">
+                  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">
+                    <span>⚙️</span> Operations & Charges
+                  </h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-tables" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Dining Tables Count</label>
+                      <input type="number" id="settings-tables" min="1" max="15" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-tax" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Total Tax Rate (%)</label>
+                      <input type="number" id="settings-tax" min="0" max="30" step="0.1" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="settings-service" style="font-weight: 600; display: block; margin-bottom: 6px; font-size: 13px;">Service Charge (%)</label>
+                      <input type="number" id="settings-service" min="0" max="25" step="0.5" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background-color: var(--bg-primary); color: var(--text-main);" required>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Theme Preferences -->
+                <div class="settings-card">
+                  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">
+                    <span>🎨</span> Appearance & Theme
+                  </h3>
+                  <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div>
+                        <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">Dark Mode</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Enable dark mode styling for the admin panel</div>
+                      </div>
+                      <label class="switch-container">
+                        <input type="checkbox" id="settings-darkmode">
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    
+                    <div>
+                      <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--text-main);">Theme Accent Color</div>
+                      <div style="display: flex; gap: 12px;">
+                        <button class="theme-dot active" data-color="#ff7a00" style="background: #ff7a00;"></button>
+                        <button class="theme-dot" data-color="#1e40af" style="background: #1e40af;"></button>
+                        <button class="theme-dot" data-color="#15803d" style="background: #15803d;"></button>
+                        <button class="theme-dot" data-color="#7c3aed" style="background: #7c3aed;"></button>
+                        <button class="theme-dot" data-color="#e11d48" style="background: #e11d48;"></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                  <button class="btn btn-outline" id="settings-reset-btn" style="padding: 10px 24px;">Reset Defaults</button>
+                  <button class="btn" id="settings-save-btn" style="padding: 10px 32px; background: var(--primary); color: white; border: none; font-weight: 600;">Save Settings</button>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Settings Summary / Preview Panel -->
+              <div class="settings-preview-column" style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="settings-card">
+                  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">Store Profile Summary</h3>
+                  <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                      <span style="color: var(--text-muted);">Current Name</span>
+                      <strong id="preview-store-name" style="color: var(--text-main);">Serviq</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                      <span style="color: var(--text-muted);">Active Tables</span>
+                      <strong id="preview-store-tables" style="color: var(--text-main);">5 Tables</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                      <span style="color: var(--text-muted);">Tax Setup</span>
+                      <strong id="preview-store-tax" style="color: var(--text-main);">5% (GST)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                      <span style="color: var(--text-muted);">Service Charge</span>
+                      <strong id="preview-store-service" style="color: var(--text-main);">0%</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                      <span style="color: var(--text-muted);">Currency</span>
+                      <strong id="preview-store-currency" style="color: var(--text-main);">₹ (INR)</strong>
+                    </div>
+                    
+                    <div style="margin-top: 10px; background-color: var(--primary-light); color: var(--primary); padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; font-weight: 500;">
+                      💡 Saving these settings will dynamically update the customer menu simulator, billing receipts, and dining table counts.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 

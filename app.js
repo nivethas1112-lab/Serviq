@@ -261,6 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function initApp() {
   setupEventListeners();
   populateSaaSTableDropdowns();
+  populateDiningTablesSelectDropdown();
   
   // Render main widgets
   renderDashboardOverview();
@@ -295,7 +296,7 @@ function switchTab(tabId) {
     }
   });
 
-  panelViews.forEach(panel => {
+  document.querySelectorAll(".panel-view").forEach(panel => {
     panel.classList.remove("active");
   });
 
@@ -310,9 +311,14 @@ function switchTab(tabId) {
     orders: "Incoming Orders",
     menu: "Menu Management",
     billing: "Billing Panel",
-    saas: "Settings"
+    saas: "Tables & QR Codes",
+    settings: "Settings"
   };
   activePanelTitle.textContent = titles[tabId] || "Dashboard";
+
+  if (tabId === "settings") {
+    renderSettingsPanel();
+  }
 }
 
 function switchSubmenuFilter(filter) {
@@ -670,6 +676,147 @@ function setupEventListeners() {
     updateCustomerCartBarSticky();
     modalItemTemp = null;
   });
+
+  // --- SETTINGS EVENT LISTENERS ---
+  // Live Preview changes
+  const inputsToPreview = ["settings-name", "settings-tables", "settings-tax", "settings-service", "settings-currency"];
+  inputsToPreview.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", updateSettingsPreview);
+      el.addEventListener("change", updateSettingsPreview);
+    }
+  });
+
+  // Settings Reset Button click
+  const resetBtn = document.getElementById("settings-reset-btn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      renderSettingsPanel();
+      alert("Settings reset to currently saved configuration.");
+    });
+  }
+
+  // Accent Color Theme dots click handler
+  const themeDots = document.querySelectorAll(".theme-dot");
+  themeDots.forEach(dot => {
+    dot.addEventListener("click", () => {
+      themeDots.forEach(d => d.classList.remove("active"));
+      dot.classList.add("active");
+    });
+  });
+
+  // Settings Save Button click handler
+  const saveBtn = document.getElementById("settings-save-btn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById("settings-name").value.trim();
+      const tagline = document.getElementById("settings-tagline").value.trim();
+      const currency = document.getElementById("settings-currency").value;
+      const tablesCount = parseInt(document.getElementById("settings-tables").value, 10);
+      const taxRatePercent = parseFloat(document.getElementById("settings-tax").value);
+      const serviceRatePercent = parseFloat(document.getElementById("settings-service").value);
+      
+      if (!name) {
+        alert("Please enter a valid restaurant name.");
+        return;
+      }
+      if (isNaN(tablesCount) || tablesCount < 1 || tablesCount > 15) {
+        alert("Please enter a tables count between 1 and 15.");
+        return;
+      }
+      if (isNaN(taxRatePercent) || taxRatePercent < 0 || taxRatePercent > 30) {
+        alert("Please enter a tax rate between 0% and 30%.");
+        return;
+      }
+      if (isNaN(serviceRatePercent) || serviceRatePercent < 0 || serviceRatePercent > 25) {
+        alert("Please enter a service charge rate between 0% and 25%.");
+        return;
+      }
+      
+      // Update state settings
+      state.restaurantSettings.name = name;
+      state.restaurantSettings.tagline = tagline;
+      state.restaurantSettings.currency = currency;
+      state.restaurantSettings.taxRate = (taxRatePercent / 100) / 2; // Split into CGST and SGST
+      state.restaurantSettings.serviceChargeRate = serviceRatePercent / 100;
+      
+      // Dynamic Table Count Update (Regenerate tables array in state)
+      const oldTablesCount = state.restaurantSettings.tablesCount;
+      state.restaurantSettings.tablesCount = tablesCount;
+      
+      if (tablesCount > state.tables.length) {
+        for (let i = state.tables.length + 1; i <= tablesCount; i++) {
+          const displayId = i < 10 ? `0${i}` : i;
+          state.tables.push({ id: `T-${displayId}`, status: "Free" });
+        }
+      } else if (tablesCount < state.tables.length) {
+        state.tables = state.tables.slice(0, tablesCount);
+      }
+      
+      // Re-populate all dining table dropdowns across panels
+      populateSaaSTableDropdowns();
+      populateDiningTablesSelectDropdown();
+      
+      // Update restaurant name in headers and sidebar profile:
+      document.getElementById("profile-restaurant-name").textContent = name;
+      document.getElementById("avatar-letter").textContent = name.charAt(0).toUpperCase();
+      
+      // Update customer simulator welcome panel text if present:
+      const custHeader = document.getElementById("cust-restaurant-name");
+      if (custHeader) custHeader.textContent = name;
+      const custTagline = document.getElementById("cust-restaurant-tagline");
+      if (custTagline) custTagline.textContent = tagline;
+      
+      // Dark Mode toggle
+      const darkToggle = document.getElementById("settings-darkmode");
+      if (darkToggle) {
+        if (darkToggle.checked) {
+          document.body.classList.add("dark-theme");
+        } else {
+          document.body.classList.remove("dark-theme");
+        }
+      }
+      
+      // Accent Color saving
+      const activeColorDot = document.querySelector(".theme-dot.active");
+      if (activeColorDot) {
+        const chosenColor = activeColorDot.getAttribute("data-color");
+        document.documentElement.style.setProperty('--primary', chosenColor);
+        document.documentElement.style.setProperty('--primary-light', chosenColor + "15");
+      }
+      
+      // Re-render and refresh views
+      renderDashboardOverview();
+      renderIncomingOrders();
+      renderBillingPanel();
+      
+      alert("Settings successfully saved and applied!");
+    });
+  }
+
+  // Dining Tables & QR select page change event listener
+  const saasTableSelect = document.getElementById("saas-table-select-page");
+  if (saasTableSelect) {
+    saasTableSelect.addEventListener("change", (e) => {
+      const selectedIndex = parseInt(e.target.value, 10);
+      const displayIndex = selectedIndex < 10 ? `0${selectedIndex}` : selectedIndex;
+      const displayLabel = `Table T-${displayIndex}`;
+      
+      const labelDisp = document.getElementById("saas-table-label-display");
+      if (labelDisp) {
+        labelDisp.textContent = displayLabel;
+      }
+      
+      // Update QR link subtitle text
+      const nextSibling = labelDisp ? labelDisp.nextElementSibling : null;
+      if (nextSibling) {
+        nextSibling.textContent = `http://localhost:3000/menu?table=T-${displayIndex}`;
+      }
+    });
+  }
 }
 
 // SIMULATOR SWITCH SCREEN
@@ -686,16 +833,113 @@ function switchCustomerScreen(screenId) {
 // SAAS TABLES DROPDOWNS POPULATE
 function populateSaaSTableDropdowns() {
   const simSelect = document.getElementById("cust-select-table-sim");
-  simSelect.innerHTML = "";
-
-  for (let i = 1; i <= 10; i++) {
-    const displayNum = i < 10 ? "0" + i : i;
-    const simOpt = document.createElement("option");
-    simOpt.value = displayNum;
-    simOpt.textContent = `Table ${displayNum}`;
-    if (displayNum === "01") simOpt.selected = true;
-    simSelect.appendChild(simOpt);
+  if (simSelect) {
+    simSelect.innerHTML = "";
+    
+    state.tables.forEach(table => {
+      const rawNum = table.id.replace("T-", "");
+      const simOpt = document.createElement("option");
+      simOpt.value = rawNum;
+      simOpt.textContent = `Table ${rawNum}`;
+      
+      if (rawNum === state.activeCustomerTable) {
+        simOpt.selected = true;
+      }
+      simSelect.appendChild(simOpt);
+    });
   }
+}
+
+// POPULATE DINING TABLES VIEW SELECTOR DROPDOWN
+function populateDiningTablesSelectDropdown() {
+  const saasTableSelect = document.getElementById("saas-table-select-page");
+  if (saasTableSelect) {
+    const currentVal = saasTableSelect.value;
+    saasTableSelect.innerHTML = "";
+    state.tables.forEach((table, index) => {
+      const opt = document.createElement("option");
+      opt.value = index + 1;
+      opt.textContent = `Table ${table.id}`;
+      saasTableSelect.appendChild(opt);
+    });
+    
+    if (currentVal && parseInt(currentVal, 10) <= state.tables.length) {
+      saasTableSelect.value = currentVal;
+    } else if (state.tables.length > 0) {
+      saasTableSelect.value = 1;
+    }
+    
+    // Trigger display label and QR code update
+    if (state.tables.length > 0) {
+      const activeIdx = saasTableSelect.value;
+      const selectedIndex = parseInt(activeIdx, 10);
+      const displayIndex = selectedIndex < 10 ? `0${selectedIndex}` : selectedIndex;
+      const displayLabel = `Table T-${displayIndex}`;
+      
+      const labelDisp = document.getElementById("saas-table-label-display");
+      if (labelDisp) {
+        labelDisp.textContent = displayLabel;
+      }
+      const nextSibling = labelDisp ? labelDisp.nextElementSibling : null;
+      if (nextSibling) {
+        nextSibling.textContent = `http://localhost:3000/menu?table=T-${displayIndex}`;
+      }
+    }
+  }
+}
+
+// RENDER SETTINGS PANEL STATE
+function renderSettingsPanel() {
+  const settings = state.restaurantSettings;
+  
+  // Fill inputs
+  document.getElementById("settings-name").value = settings.name;
+  document.getElementById("settings-tagline").value = settings.tagline || "";
+  document.getElementById("settings-currency").value = settings.currency || "₹";
+  document.getElementById("settings-tables").value = settings.tablesCount || 5;
+  document.getElementById("settings-tax").value = (settings.taxRate * 100 * 2).toFixed(1);
+  document.getElementById("settings-service").value = (settings.serviceChargeRate * 100).toFixed(1);
+  
+  // Sync Dark Mode state
+  const darkToggle = document.getElementById("settings-darkmode");
+  if (darkToggle) {
+    darkToggle.checked = document.body.classList.contains("dark-theme");
+  }
+  
+  // Sync Theme Color dot
+  const currentAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+  const themeDots = document.querySelectorAll(".theme-dot");
+  themeDots.forEach(dot => {
+    const dotColor = dot.getAttribute("data-color");
+    if (dotColor === currentAccentColor) {
+      themeDots.forEach(d => d.classList.remove("active"));
+      dot.classList.add("active");
+    }
+  });
+
+  updateSettingsPreview();
+}
+
+// UPDATE SETTINGS SUMMARY PREVIEW CARD
+function updateSettingsPreview() {
+  const nameVal = document.getElementById("settings-name").value;
+  const tablesVal = document.getElementById("settings-tables").value;
+  const taxVal = document.getElementById("settings-tax").value;
+  const serviceVal = document.getElementById("settings-service").value;
+  const currencyVal = document.getElementById("settings-currency").value;
+  
+  document.getElementById("preview-store-name").textContent = nameVal || "Serviq";
+  document.getElementById("preview-store-tables").textContent = `${tablesVal || 5} Tables`;
+  document.getElementById("preview-store-tax").textContent = `${taxVal || 0}% (GST)`;
+  document.getElementById("preview-store-service").textContent = `${serviceVal || 0}%`;
+  
+  let currLabel = currencyVal;
+  if (currencyVal === "₹") currLabel = "₹ (INR)";
+  if (currencyVal === "$") currLabel = "$ (USD)";
+  if (currencyVal === "€") currLabel = "€ (EUR)";
+  if (currencyVal === "£") currLabel = "£ (GBP)";
+  if (currencyVal === "AED") currLabel = "AED";
+  document.getElementById("preview-store-currency").textContent = currLabel;
 }
 
 // ==========================================
@@ -1101,24 +1345,57 @@ function renderBillingSummary() {
     subtotal += cost;
 
     const tr = document.createElement("tr");
+    const currency = state.restaurantSettings.currency || "₹";
     tr.innerHTML = `
       <td>${item.name}</td>
       <td>${item.qty}</td>
-      <td>₹${item.price}</td>
-      <td style="font-weight:600; text-align:right;">₹${cost}</td>
+      <td>${currency}${item.price}</td>
+      <td style="font-weight:600; text-align:right;">${currency}${cost}</td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Calculate taxes matching mockup breakdown
-  const cgst = parseFloat((subtotal * 0.025).toFixed(2)); // 2.5%
-  const sgst = parseFloat((subtotal * 0.025).toFixed(2)); // 2.5%
-  const grandTotal = subtotal + cgst + sgst;
+  const taxRate = state.restaurantSettings.taxRate;
+  const serviceRate = state.restaurantSettings.serviceChargeRate;
+  const currency = state.restaurantSettings.currency || "₹";
+  
+  const cgst = parseFloat((subtotal * taxRate).toFixed(2));
+  const sgst = parseFloat((subtotal * taxRate).toFixed(2));
+  const serviceCharge = parseFloat((subtotal * serviceRate).toFixed(2));
+  const grandTotal = subtotal + cgst + sgst + serviceCharge;
 
-  document.getElementById("bill-calc-subtotal").textContent = `₹${subtotal}`;
-  document.getElementById("bill-calc-cgst").textContent = `₹${cgst}`;
-  document.getElementById("bill-calc-sgst").textContent = `₹${sgst}`;
-  document.getElementById("bill-calc-total").textContent = `₹${grandTotal}`;
+  const breakdownContainer = document.getElementById("billing-breakdown-container");
+  if (breakdownContainer) {
+    let serviceChargeHtml = "";
+    if (serviceCharge > 0) {
+      serviceChargeHtml = `
+        <div class="breakdown-row" style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-muted);">
+          <span>Service Charge (${(serviceRate * 100).toFixed(1)}%)</span>
+          <span style="font-weight:500; color:var(--text-main);">${currency}${serviceCharge}</span>
+        </div>
+      `;
+    }
+    
+    breakdownContainer.innerHTML = `
+      <div class="breakdown-row" style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-muted);">
+        <span>Subtotal</span>
+        <span style="font-weight:500; color:var(--text-main);">${currency}${subtotal}</span>
+      </div>
+      <div class="breakdown-row" style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-muted);">
+        <span>CGST (${(taxRate * 100).toFixed(1)}%)</span>
+        <span style="font-weight:500; color:var(--text-main);">${currency}${cgst}</span>
+      </div>
+      <div class="breakdown-row" style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-muted);">
+        <span>SGST (${(taxRate * 100).toFixed(1)}%)</span>
+        <span style="font-weight:500; color:var(--text-main);">${currency}${sgst}</span>
+      </div>
+      ${serviceChargeHtml}
+      <div class="breakdown-row total-row" style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:10px; margin-top:10px; font-weight:700; font-size:15px; color:var(--text-main);">
+        <span>Total</span>
+        <span>${currency}${grandTotal}</span>
+      </div>
+    `;
+  }
 
   // Hide paid status if paid already
   const payBtn = document.getElementById("bill-pay-btn");
