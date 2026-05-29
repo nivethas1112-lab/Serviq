@@ -440,8 +440,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Active Highlight matches screenshot (white bg, black text) */
 .sidebar-item.active:not(.expanded) > a {
-  background-color: #ffffff;
-  color: var(--black);
+  background-color: var(--primary);
+  color: #ffffff;
 }
 
 .sidebar-item.has-submenu.active.expanded > a {
@@ -490,8 +490,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .submenu-item.active a {
-  background-color: #ffffff !important;
-  color: var(--black) !important;
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
 }
 
 .submenu-item a:hover {
