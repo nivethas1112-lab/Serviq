@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRMenu - SaaS Admin Panel</title>
+  <link rel="icon" type="image/png" href="ChatGPT Image May 28, 2026, 03_54_23 PM.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ==========================================
+         1. ADMIN LOGIN VIEW
+         ========================================== -->
+    <div id="login-view" class="login-container">
+      <div class="login-card">
+        <!-- Logo crossed-box container -->
+        <div class="login-logo-crossed-box" style="border: none; background: transparent; display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; margin: 0 auto 24px auto; overflow: hidden;">
+          <img src="ChatGPT Image May 28, 2026, 03_54_23 PM.png" alt="Serviq Logo" style="width: 150px; height: 150px; object-fit: contain;">
+        </div>
+        
+        <h1 class="login-title">Serviq Admin</h1>
+        <p class="login-subtitle">Sign in to your dashboard</p>
+        
+        <!-- Demo Credentials Info Block -->
+        <div style="background-color: var(--primary-light); border: 1px solid rgba(255, 122, 0, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 24px; font-size: 13px; text-align: left;">
+          <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span>🔑</span> Demo Credentials
+          </div>
+          <div style="color: var(--text-main); margin-bottom: 2px;">Email: <strong style="font-family: monospace; font-size: 13.5px; color: var(--black);">admin@restaurant.com</strong></div>
+          <div style="color: var(--text-main);">Password: <strong style="font-family: monospace; font-size: 13.5px; color: var(--black);">admin123</strong></div>
+        </div>
+        
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon">✉️</span>
+              <input type="email" id="login-email" value="admin@restaurant.com" required placeholder="admin@restaurant.com">
+            </div>
+          </div>
+          
+          <div class="form-group" style="position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+              <label for="login-password" style="margin-bottom:0;">Password</label>
+              <a href="#" class="forgot-pwd-link" onclick="alert('Password reset link sent to registered email.')">Forgot password?</a>
+            </div>
+            <div class="input-icon-wrapper" style="position: relative;">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="login-password" value="admin123" required placeholder="Enter your password" style="padding-right: 40px;">
+              <span id="toggle-password-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 14px;">👁️</span>
+            </div>
+          </div>
+          
+          <div class="form-row-remember">
+            <label class="checkbox-container">
+              <input type="checkbox" id="remember-me" checked>
+              <span class="checkmark-box"></span>
+              Remember me
+            </label>
+          </div>
+          
+          <div id="login-error" style="color: var(--danger); font-size: 13px; margin-bottom: 15px; display: none; text-align: left;">
+            ❌ Invalid email or password. Please try again.
+          </div>
+          
+          <button type="submit" class="btn btn-black" style="width: 100%; margin-top: 10px;">
+            Login to Dashboard
+          </button>
+        </form>
+
+        <div class="login-divider-or">
+          <span>or</span>
+        </div>
+
+        <button class="btn btn-login-google" onclick="alert('Google authentication mocked successfully!')">
+          <span style="font-size:16px;">🔑</span> Login with Google
+        </button>
+
+        <div class="login-card-footer-plan">
+          Standard Plan · 1 Restaurant · 5 Tables
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         2. MAIN DASHBOARD WORKSPACE (HIDDEN BY DEFAULT)
+         ========================================== -->
+    <div id="dashboard-view" class="dashboard-wrapper" style="display: none;">
+      
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-header-card">
+          <div class="sidebar-logo-icon" style="background-color: var(--primary); display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 8px; overflow: hidden;">
+            <img src="ChatGPT Image May 28, 2026, 03_54_23 PM.png" alt="Serviq Logo" style="width: 36px; height: 36px; object-fit: contain; filter: brightness(0) invert(1);">
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <span class="brand-text">Serviq</span>
+            <span class="plan-sub">Standard Plan</span>
+          </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+          <li class="sidebar-item active" data-tab="overview">
+            <a href="#">🎛️ Dashboard</a>
+          </li>
+          <li class="sidebar-item has-submenu" data-tab="orders" id="orders-menu-item">
+            <a href="#" class="submenu-toggle">
+              📝 Incoming Orders 
+              <span id="live-orders-badge" class="pulse-indicator" style="display: none; margin-left: 6px;"></span>
+              <span class="submenu-chevron" style="margin-left: auto;">▼</span>
+            </a>
+            <ul class="sidebar-submenu">
+              <li class="submenu-item" data-filter="New"><a href="#">New</a></li>
+              <li class="submenu-item" data-filter="Preparing"><a href="#">Preparing</a></li>
+              <li class="submenu-item" data-filter="Ready"><a href="#">Ready</a></li>
+              <li class="submenu-item" data-filter="Done"><a href="#">Done</a></li>
+            </ul>
+          </li>
+          <li class="sidebar-item" data-tab="menu">
+            <a href="#">🍴 Menu Management</a>
+          </li>
+          <li class="sidebar-item" data-tab="billing">
+            <a href="#">💵 Billing</a>
+          </li>
+          <li class="sidebar-item" data-tab="saas">
+            <a href="#">📋 Tables</a>
+          </li>
+          <li class="sidebar-item" onclick="alert('Settings view coming soon!')">
+            <a href="#">⚙️ Settings</a>
+          </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+          <div class="user-info">
+            <div class="user-avatar" id="avatar-letter">Q</div>
+            <div class="user-details">
+              <div class="user-name" id="profile-restaurant-name">QRMenu Restaurant</div>
+              <div class="user-role" id="profile-user-email">admin@restaurant.com</div>
+            </div>
+          </div>
+          <button id="logout-btn" class="btn btn-outline" style="width: 100%; border-color: var(--border);">
+            🔒 Log Out
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN WORKSPACE -->
+      <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="main-header">
+          <div class="header-title-container">
+            <h1 class="header-title" id="active-panel-title">Dashboard</h1>
+            <span id="dashboard-date-time" class="header-subtitle-date">Wednesday, 14 May 2025 · 1:30 PM</span>
+          </div>
+          <div class="header-actions">
+            <button class="simulator-toggle-btn" id="toggle-simulator-btn">
+              📱 Toggle Simulator
+            </button>
+            <button class="btn btn-notify" onclick="alert('No new notifications.')">
+              🔔 3 notifications
+            </button>
+            <button class="btn btn-user-profile" onclick="alert('User profile settings menu.')">
+              👤 Admin
+            </button>
+          </div>
+        </header>
+
+        <!-- CONTENT BODY -->
+        <div class="content-body">
+
+          <!-- ==========================================
+               PANEL: DASHBOARD OVERVIEW
+               ========================================== -->
+          <section id="panel-overview" class="panel-view active">
+            <!-- 4 KPI Metrics Row -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-main-row">
+                  <div class="stat-info">
+                    <div class="stat-label">Today's Revenue</div>
+                    <h3 id="dash-val-revenue">₹12,480</h3>
+                    <div class="stat-sub-label green-label">+12% from yesterday</div>
+                  </div>
+                  <div class="stat-icon-wrapper font-rupee">₹</div>
+                </div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-main-row">
+                  <div class="stat-info">
+                    <div class="stat-label">Total Orders</div>
+                    <h3 id="dash-val-orders">38</h3>
+                    <div id="dash-val-in-progress" class="stat-sub-label text-muted">6 in progress</div>
+                  </div>
+                  <div class="stat-icon-wrapper">📋</div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-main-row">
+                  <div class="stat-info">
+                    <div class="stat-label">Active Tables</div>
+                    <h3 id="dash-val-tables">4 / 5</h3>
+                    <div id="dash-val-table-avail" class="stat-sub-label text-muted">1 table available</div>
+                  </div>
+                  <div class="stat-icon-wrapper">🪑</div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-main-row">
+                  <div class="stat-info">
+                    <div class="stat-label">Pending Orders</div>
+                    <h3 id="dash-val-pending">3</h3>
+                    <div class="stat-sub-label red-label">Needs attention</div>
+                  </div>
+                  <div class="stat-icon-wrapper">⏱️</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dashboard Inner Grid -->
+            <div class="dashboard-inner-grid">
+              <!-- Left: Live Order Feed -->
+              <div class="feed-card">
+                <div class="feed-header">
+                  <h2 class="feed-title">Live Order Feed</h2>
+                  <span class="live-dot-indicator"><span class="pulse-dot"></span>Live</span>
+                </div>
+                <div class="feed-table-wrapper">
+                  <table class="feed-table">
+                    <thead>
+                      <tr>
+                        <th>ORDER ID</th>
+                        <th>TABLE</th>
+                        <th>ITEMS</th>
+                        <th>TIME</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dash-order-feed-tbody">
+                      <!-- Dynamically filled with order rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Right: Tables Status Widget -->
+              <div class="tables-widget-card">
+                <h2 class="feed-title" style="margin-bottom: 20px;">Tables</h2>
+                <div class="tables-status-grid" id="dash-tables-grid-container">
+                  <!-- Dynamically populated cells T-01 to T-05 -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               PANEL: INCOMING ORDERS
+               ========================================== -->
+          <section id="panel-orders" class="panel-view">
+            <div class="panel-header-flex">
+              <div class="panel-title-desc">
+                <h2 class="panel-inner-title">Incoming Orders</h2>
+                <p class="panel-inner-desc">Manage and process all live orders</p>
+              </div>
+
+            </div>
+
+            <div class="incoming-orders-list-wrapper" id="incoming-orders-list">
+              <!-- Dynamically populated order bar cards -->
+            </div>
+          </section>
+
+          <!-- ==========================================
+               PANEL: MENU MANAGEMENT
+               ========================================== -->
+          <section id="panel-menu" class="panel-view">
+            <div class="panel-header-flex" style="margin-bottom: 20px;">
+              <div class="panel-title-desc">
+                <h2 class="panel-inner-title">Menu Management</h2>
+                <p class="panel-inner-desc">Add, edit, and manage your menu items</p>
+              </div>
+              <button class="btn btn-black" id="add-menu-item-btn">
+                ➕ Add New Item
+              </button>
+            </div>
+
+            <!-- Three-column layout -->
+            <div class="menu-manager-grid">
+              
+              <!-- Column 1: Categories Side Navigation -->
+              <div class="menu-categories-column">
+                <div class="column-header-title">CATEGORIES</div>
+                <ul class="categories-list-menu" id="menu-categories-list">
+                  <!-- Populate Category Counts -->
+                </ul>
+                <button class="btn btn-add-cat" onclick="alert('Add category modal mockup.')">
+                  ➕ Add Category
+                </button>
+              </div>
+
+              <!-- Column 2: Items Table Listing -->
+              <div class="menu-items-column">
+                <div class="menu-search-sort-row">
+                  <div class="menu-search-wrapper">
+                    <span class="search-input-icon">🔍</span>
+                    <input type="text" id="menu-search-input" placeholder="Search menu items...">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:13px; color:var(--text-muted);">Sort by</span>
+                    <select id="menu-sort-select" style="padding:6px 12px; font-size:13px; border-radius:6px; background:white;">
+                      <option value="name">Name</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="menu-table-wrapper">
+                  <table class="menu-items-table">
+                    <tbody id="menu-items-tbody">
+                      <!-- Injected rows of menu items -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Column 3: Edit Item Form Panel -->
+              <div class="menu-edit-form-column">
+                <div class="edit-form-header" id="menu-form-title">Edit Item</div>
+                
+                <form id="menu-edit-form">
+                  <input type="hidden" id="edit-item-id">
+                  
+                  <!-- Crossed Photo box -->
+                  <div class="edit-image-placeholder-box">
+                    <div class="crossed-inner">
+                      <span class="crossed-label" id="edit-image-placeholder-label">Item Photo</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-input-name">Item Name</label>
+                    <input type="text" id="edit-input-name" required placeholder="e.g. Chicken Biryani">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-input-desc">Description</label>
+                    <textarea id="edit-input-desc" rows="3" placeholder="Item description..."></textarea>
+                  </div>
+
+                  <div class="form-row-two-col">
+                    <div class="form-group" style="flex:1;">
+                      <label for="edit-input-price">Price (₹)</label>
+                      <input type="number" id="edit-input-price" required placeholder="320">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                      <label for="edit-input-category">Category</label>
+                      <select id="edit-input-category" required>
+                        <option value="Starters">Starters</option>
+                        <option value="Rice Meals">Rice Meals</option>
+                        <option value="Tiffin">Tiffin</option>
+                        <option value="Rotis">Rotis</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Drinks">Drinks</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-top:24px;">
+                    <button type="submit" class="btn btn-black" style="width: 100%;">
+                      Save Changes
+                    </button>
+                    <button type="button" class="btn btn-outline" id="menu-cancel-btn" style="width: 100%;">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ==========================================
+               PANEL: BILLING PANEL
+               ========================================== -->
+          <section id="panel-billing" class="panel-view">
+            <div class="panel-header-flex" style="margin-bottom: 20px;">
+              <div class="panel-title-desc">
+                <h2 class="panel-inner-title">Billing Panel</h2>
+                <p class="panel-inner-desc">Manage table bills, GST and payment status</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select id="billing-time-filter" style="padding:6px 12px; font-size:13px; border-radius:6px;">
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Billing Grid -->
+            <div class="billing-panel-grid">
+              
+              <!-- Column 1: Tables List -->
+              <div class="billing-tables-column">
+                <div class="column-header-title">TABLES</div>
+                <div class="billing-tables-list-container" id="billing-tables-list">
+                  <!-- Dynamic table rows -->
+                </div>
+              </div>
+
+              <!-- Column 2: Bill Summary detail & payment state -->
+              <div class="billing-summary-column">
+                
+                <div class="bill-summary-header-row">
+                  <div>
+                    <h3 id="bill-title-header" class="bill-summary-title">Table 05 — Bill Summary</h3>
+                    <p id="bill-order-count-sub" class="bill-summary-subtitle">2 orders · Last updated 1:28 PM</p>
+                  </div>
+                  <div style="display:flex; gap:10px;">
+                    <button class="btn btn-outline btn-bill-action" onclick="alert('Receipt sent to printing queue.')">
+                      🖨️ Print Receipt
+                    </button>
+                    <button class="btn btn-outline btn-bill-action" onclick="alert('Receipt link generated!')">
+                      🔗 Share
+                    </button>
+                  </div>
+                </div>
+
+                <div class="billing-split-inner">
+                  <!-- Table of bill items -->
+                  <div class="bill-items-table-wrapper">
+                    <table class="bill-items-table">
+                      <thead>
+                        <tr>
+                          <th>ITEM</th>
+                          <th>QTY</th>
+                          <th>RATE</th>
+                          <th style="text-align:right;">AMOUNT</th>
+                        </tr>
+                      </thead>
+                      <tbody id="billing-summary-items-tbody">
+                        <!-- Dynamic items from state -->
+                      </tbody>
+                    </table>
+
+                    <div class="price-breakdown-card">
+                      <div class="breakdown-header">PRICE BREAKDOWN</div>
+                      
+                      <div class="breakdown-row">
+                        <span>Subtotal</span>
+                        <span id="bill-calc-subtotal" style="font-weight:500;">₹880</span>
+                      </div>
+                      <div class="breakdown-row">
+                        <span>CGST (2.5%)</span>
+                        <span id="bill-calc-cgst" style="font-weight:500;">₹22</span>
+                      </div>
+                      <div class="breakdown-row">
+                        <span>SGST (2.5%)</span>
+                        <span id="bill-calc-sgst" style="font-weight:500;">₹22</span>
+                      </div>
+                      <div class="breakdown-row total-row">
+                        <span>Total</span>
+                        <span id="bill-calc-total">₹924</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right block: Payment Status selector widget -->
+                  <div class="payment-status-wrapper">
+                    <div class="payment-status-card">
+                      <div class="column-header-title" style="border-bottom: 1px solid var(--border); padding-bottom:10px; margin-bottom:16px;">
+                        PAYMENT STATUS
+                      </div>
+                      
+                      <div class="payment-options-list">
+                        <label class="payment-checkbox-row">
+                          <input type="radio" name="payment-method" value="Cash">
+                          <span class="radio-indicator"></span>
+                          <span>Cash</span>
+                        </label>
+                        <label class="payment-checkbox-row">
+                          <input type="radio" name="payment-method" value="UPI" checked>
+                          <span class="radio-indicator"></span>
+                          <span>UPI / QR</span>
+                        </label>
+                        <label class="payment-checkbox-row">
+                          <input type="radio" name="payment-method" value="Card">
+                          <span class="radio-indicator"></span>
+                          <span>Card</span>
+                        </label>
+                      </div>
+
+                      <button class="btn btn-black" id="bill-pay-btn" style="width:100%; margin-top:24px;">
+                        Mark as Paid
+                      </button>
+                      <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="alert('PDF invoice downloaded successfully!')">
+                        Generate Receipt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ==========================================
+               PANEL: TABLES / CONFIG
+               ========================================== -->
+          <section id="panel-saas" class="panel-view">
+            <div class="panel-header-flex" style="margin-bottom: 20px;">
+              <div class="panel-title-desc">
+                <h2 class="panel-inner-title">Dining Tables & QR Code Generator</h2>
+                <p class="panel-inner-desc">Verify QR codes assigned to restaurant tables</p>
+              </div>
+            </div>
+
+            <div style="background:white; padding:32px; border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; text-align:center; max-width:600px; margin: 0 auto;">
+              <h3 style="margin-bottom:10px;">Select Table to View QR</h3>
+              <select id="saas-table-select-page" style="padding:10px 14px; width:200px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
+                <option value="1">Table T-01</option>
+                <option value="2">Table T-02</option>
+                <option value="3">Table T-03</option>
+                <option value="4">Table T-04</option>
+                <option value="5">Table T-05</option>
+              </select>
+
+              <div style="width:180px; height:180px; border: 4px solid var(--black); background:white; padding:8px; display:flex; flex-wrap:wrap; margin-bottom:16px;">
+                <div style="width: 50px; height: 50px; background: var(--black); margin-right: auto; margin-bottom: auto;"></div>
+                <div style="width: 50px; height: 50px; background: var(--black); margin-left: auto; margin-bottom: auto;"></div>
+                <div style="width: 100%; height: 12px; display:flex; gap: 4px; margin: 6px 0;">
+                  <div style="flex:1; background: var(--black)"></div>
+                  <div style="flex:1; background: var(--primary)"></div>
+                  <div style="flex:1; background: var(--black)"></div>
+                </div>
+                <div style="width: 50px; height: 50px; background: var(--black); margin-right: auto; margin-top: auto;"></div>
+                <div style="width: 50px; height: 50px; background: var(--primary); margin-left: auto; margin-top: auto;"></div>
+              </div>
+              <h4 id="saas-table-label-display" style="color:var(--primary); font-weight:700;">Table T-01</h4>
+              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">http://localhost:3000/menu?table=T-01</p>
+              
+              <button class="btn btn-black" style="margin-top:20px;" onclick="alert('Sent QR to print queue!')">Print QR Sticker</button>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      <!-- ==========================================
+           3. CUSTOMER SMARTPHONE WORKFLOW SIMULATOR
+           ========================================== -->
+      <aside class="simulator-panel collapsed" id="simulator-panel">
+        <div class="simulator-header">
+          <div class="simulator-title">
+            📱 <span>Customer Simulator</span>
+          </div>
+          <button class="btn" id="close-simulator-btn" style="background: transparent; color: white; font-size: 18px; padding: 0;">
+            ✕
+          </button>
+        </div>
+
+        <!-- Simulator debug controls bar outside phone screen -->
+        <div class="simulator-controls" style="padding: 10px 16px; background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <label for="cust-select-table-sim" style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 0;">Simulate Table:</label>
+          <select id="cust-select-table-sim" style="padding: 4px 8px; font-size: 12px; width: auto; max-width: 120px; height: 30px; border-radius: 4px;">
+            <!-- Auto-populated tables -->
+          </select>
+        </div>
+
+        <div class="phone-mockup-wrapper">
+          <div class="phone-device">
+            <div class="phone-notch"></div>
+            
+            <!-- iOS Status Bar -->
+            <div class="phone-status-bar">
+              <span class="status-time">9:41 AM</span>
+              <span class="status-icons">
+                <!-- Mobile Signal Icons -->
+                <svg width="14" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><rect x="1" y="16" width="3" height="4" rx="0.5"/><rect x="6" y="12" width="3" height="8" rx="0.5"/><rect x="11" y="8" width="3" height="12" rx="0.5"/><rect x="16" y="4" width="3" height="16" rx="0.5"/><rect x="21" y="0" width="3" height="20" rx="0.5"/></svg>
+                <!-- Wifi Icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                <!-- Battery Icon -->
+                <svg width="18" height="10" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="1" y="1" width="18" height="10" rx="2" ry="2"></rect><line x1="23" y1="4" x2="23" y2="8"></line><rect x="3" y="3" width="11" height="6" rx="1" ry="1" fill="currentColor"></rect></svg>
+              </span>
+            </div>
+            
+            <div class="phone-screen" id="phone-screen-viewport">
+              
+              <!-- SCREEN 1: QR LANDING VIEW -->
+              <div id="cust-landing-view" class="customer-view active cust-landing">
+                <!-- Crossed Square Logo Placeholder -->
+                <div class="cust-logo-crossed-box" style="border: none; background: transparent; display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; margin: 16px auto 20px auto; overflow: hidden;">
+                  <img src="ChatGPT Image May 28, 2026, 03_54_23 PM.png" alt="Serviq Logo" style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <div class="cust-landing-welcome-sub">Welcome to</div>
+                <h2 class="cust-landing-title" id="cust-landing-welcome">The Grand Bistro</h2>
+                <p class="cust-landing-tagline">Scan &bull; Order &bull; Enjoy</p>
+                
+                <div class="cust-landing-divider"></div>
+
+                <div class="cust-table-card">
+                  <div class="cust-table-card-label">YOUR TABLE</div>
+                  <div class="cust-table-card-number" id="cust-table-label">Table 01</div>
+                  <div class="cust-table-card-sub">Assigned via QR Code</div>
+                </div>
+
+                <div class="cust-info-banner">
+                  <span class="cust-info-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  </span>
+                  <span class="cust-info-text">Menu and order will be linked to this table. Call staff if table number is wrong.</span>
+                </div>
+
+                <button class="btn-black-full" id="cust-start-btn">
+                  Start Ordering
+                </button>
+
+                <div class="cust-landing-footer">Powered by QRMenu - Free Plan</div>
+              </div>
+
+              <!-- SCREEN 2: DIGITAL MENU BROWSING VIEW -->
+              <div id="cust-menu-view" class="customer-view">
+                <!-- Dark Header Block matching screenshot -->
+                <div class="cust-menu-header-dark">
+                  <div class="header-top-row">
+                    <div class="table-info-orange">
+                      <span class="pin-icon">📍</span>
+                      <span id="cust-menu-table-label-top">Table T-05</span>
+                    </div>
+                    <button class="cust-header-cart-btn" id="cust-header-cart-btn">
+                      <span class="cart-icon">🛒</span>
+                      <span>Cart</span>
+                      <span class="cart-badge-count" id="cust-cart-badge-count">0</span>
+                    </button>
+                  </div>
+                  
+                  <h2 class="brand-title-white" id="cust-brand-title">Saravana Bhavan</h2>
+                  <p class="brand-subtitle-grey" id="cust-brand-subtitle">Table T-05 · Order anytime</p>
+                  
+                  <!-- Dark Search bar inside header -->
+                  <div class="cust-menu-search-dark">
+                    <span class="search-icon-dark">🔍</span>
+                    <input type="text" id="cust-menu-search-input" placeholder="Search dishes...">
+                  </div>
+
+                  <!-- Category Pills inside header block -->
+                  <div class="cust-menu-categories-dark" id="cust-menu-categories-pills">
+                    <!-- Dynamic category pills -->
+                  </div>
+                </div>
+
+                <!-- Dynamic Item List with light grey page background -->
+                <div class="cust-menu-list-wrapper">
+                  <div class="cust-category-title-strip" id="cust-category-title-strip">
+                    RICE MEALS - 5 ITEMS
+                  </div>
+                  <div class="cust-menu-list" id="cust-menu-list-container">
+                    <!-- Dynamic cards -->
+                  </div>
+                </div>
+
+                <!-- Cart sticky footer -->
+                <div class="cust-cart-bar-sticky" id="cust-cart-bar-sticky" style="display: none;">
+                  <button class="cust-cart-trigger" id="cust-view-cart-btn">
+                    <span class="cart-quantity-circle" id="cust-cart-quantity-circle">0</span>
+                    <span class="cart-text-center">View Cart</span>
+                    <span class="cart-total-price" id="cust-cart-subtotal">₹0.00</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- SCREEN 3: CART PREVIEW & BILLING SUMMARY -->
+              <div id="cust-cart-view" class="customer-view">
+                <div class="cust-menu-header">
+                  <button id="cust-cart-back-btn" class="btn" style="background:transparent; font-size: 14px; padding: 0; font-weight: 700;">⬅️ Menu</button>
+                  <span style="font-weight: 700;">Review Cart</span>
+                  <span style="width: 24px;"></span>
+                </div>
+
+                <div class="cust-cart-screen">
+                  <div class="cust-cart-items" id="cust-cart-items-container">
+                    <!-- Dynamic cart items list -->
+                  </div>
+
+                  <!-- Tax calculations -->
+                  <div class="cust-bill-summary">
+                    <div class="receipt-row" style="margin-bottom: 6px;">
+                      <span>Items Subtotal:</span>
+                      <span id="cust-summary-subtotal">₹0.00</span>
+                    </div>
+                    <div class="receipt-row" style="margin-bottom: 6px;">
+                      <span>GST Tax (5%):</span>
+                      <span id="cust-summary-tax">₹0.00</span>
+                    </div>
+                    <div class="receipt-row bold" style="margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px;">
+                      <span>Estimated Total:</span>
+                      <span id="cust-summary-total">₹0.00</span>
+                    </div>
+                  </div>
+
+                  <!-- Customer instructions -->
+                  <div class="form-group">
+                    <label for="cust-order-notes" style="font-size: 11px;">Kitchen instructions / notes:</label>
+                    <textarea id="cust-order-notes" rows="2" placeholder="e.g. Extra spicy, no onions, gluten free..." style="font-size: 12px; padding: 8px;"></textarea>
+                  </div>
+
+                  <button class="btn btn-primary" id="cust-place-order-btn" style="width:100%; padding:12px; border-radius: 8px; font-weight: 700; margin-top: 10px;">
+                    🚀 Confirm & Place Order
+                  </button>
+                </div>
+              </div>
+
+              <!-- SCREEN 4: ORDER CONFIRMATION & REAL-TIME STATUS TRACKING -->
+              <div id="cust-confirm-view" class="customer-view cust-confirm-screen">
+                <div class="track-icon-container">
+                  🔥
+                </div>
+                <h2 style="font-size: 18px; margin-bottom: 6px;">Order Placed Successfully!</h2>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;" id="cust-confirm-order-id">Order ID: #847</p>
+                <div class="cust-table-tag" id="cust-confirm-table-tag" style="margin-bottom: 0px;">Table 01</div>
+
+                <div style="background-color: var(--primary-light); width: 100%; border-radius: 8px; padding: 10px; margin-top: 15px; font-size: 12px;">
+                  Estimated Wait Time: <strong id="cust-est-time">15 - 20 mins</strong>
+                </div>
+
+                <!-- Real time tracking step indicators -->
+                <div class="tracking-steps">
+                  <div class="track-step" id="step-pending">
+                    <div class="track-step-dot">
+                      <div class="track-step-line"></div>
+                    </div>
+                    <div class="track-step-info">
+                      <span class="track-step-title">Order Received</span>
+                      <span class="track-step-desc">Sent to kitchen for approval</span>
+                    </div>
+                  </div>
+                  
+                  <div class="track-step" id="step-preparing">
+                    <div class="track-step-dot">
+                      <div class="track-step-line"></div>
+                    </div>
+                    <div class="track-step-info">
+                      <span class="track-step-title">Preparing in Kitchen</span>
+                      <span class="track-step-desc">Chefs are preparing your meal</span>
+                    </div>
+                  </div>
+
+                  <div class="track-step" id="step-ready">
+                    <div class="track-step-dot">
+                      <div class="track-step-line"></div>
+                    </div>
+                    <div class="track-step-info">
+                      <span class="track-step-title">Ready to Serve</span>
+                      <span class="track-step-desc">Waitstaff is delivering to table</span>
+                    </div>
+                  </div>
+
+                  <div class="track-step" id="step-delivered">
+                    <div class="track-step-dot"></div>
+                    <div class="track-step-info">
+                      <span class="track-step-title">Delivered & Served</span>
+                      <span class="track-step-desc">Enjoy your delicious food!</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-outline" id="cust-order-more-btn" style="width: 100%; font-size: 12px;">
+                  📋 Order More Items
+                </button>
+              </div>
+
+              <!-- POPUP SUB-MODAL FOR QUANTITY & INSTRUCTIONS BEFORE CART -->
+              <div class="cust-modal" id="cust-item-modal">
+                <div class="cust-modal-content">
+                  <div class="modal-header-flex" style="margin-bottom: 12px;">
+                    <h3 id="cust-modal-item-name" style="font-size: 18px;">Garlic Parmesan Wings</h3>
+                    <span class="modal-close" id="cust-modal-close">✕</span>
+                  </div>
+                  <img id="cust-modal-item-img" src="" alt="Food Item" style="width:100%; height:150px; object-fit:cover; border-radius: 8px; margin-bottom: 16px; display:none;">
+                  <p id="cust-modal-item-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">Crispy golden fries tossed in fresh garlic butter and grated parmesan.</p>
+                  
+                  <div class="receipt-row">
+                    <span>Base Price:</span>
+                    <span id="cust-modal-item-price" style="font-weight: 700; color: var(--primary); font-size: 16px;">₹180</span>
+                  </div>
+
+                  <!-- Quantity management -->
+                  <div style="margin-top: 16px;">
+                    <label style="font-size: 11px; font-weight: 700; color: var(--text-muted)">Select Quantity:</label>
+                    <div class="cust-quantity-control">
+                      <button class="qty-btn" id="qty-minus">-</button>
+                      <span id="qty-value" style="font-weight: 700; font-size: 16px;">1</span>
+                      <button class="qty-btn" id="qty-plus">+</button>
+                    </div>
+                  </div>
+
+                  <!-- Instructions -->
+                  <div class="form-group">
+                    <label for="cust-modal-notes" style="font-size: 11px;">Special Instructions (Optional):</label>
+                    <input type="text" id="cust-modal-notes" placeholder="e.g. Extra cheese, sauce on the side...">
+                  </div>
+
+                  <button class="btn btn-primary" id="cust-modal-add-btn" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 8px;">
+                    Add to Cart • <span id="cust-modal-total-price">₹180</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
